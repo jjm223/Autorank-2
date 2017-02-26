@@ -2,6 +2,7 @@ package me.armar.plugins.autorank.hooks;
 
 import java.util.HashMap;
 
+import com.earth2me.essentials.Essentials;
 import org.bukkit.entity.Player;
 
 import me.armar.plugins.autorank.Autorank;
@@ -14,6 +15,7 @@ import me.staartvin.statz.hooks.handlers.AFKTerminatorHandler;
 import me.staartvin.statz.hooks.handlers.EssentialsHandler;
 import me.staartvin.statz.hooks.handlers.RoyalCommandsHandler;
 import me.staartvin.statz.hooks.handlers.UltimateCoreHandler;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * This class is used for loading all the dependencies Autorank has. <br>
@@ -119,28 +121,15 @@ public class DependencyManager {
      *            Player to check.
      * @return true if the player is suspected of being AFK, false otherwise.
      */
-    public boolean isAFK(final Player player) {
-        if (!plugin.getConfigHandler().useAFKIntegration()
-                || !this.getDependency(AutorankDependency.STATZ).isAvailable()) {
+    public boolean isAFK(final Player player)
+    {
+        if (!plugin.getConfigHandler().useAFKIntegration())
+        {
             return false;
         }
 
-        if (this.getDependencyHandler(Dependency.ESSENTIALS).isAvailable()) {
-            plugin.debugMessage("Using Essentials for AFK");
-            return ((EssentialsHandler) this.getDependencyHandler(Dependency.ESSENTIALS)).isAFK(player);
-        } else if (this.getDependencyHandler(Dependency.ROYAL_COMMANDS).isAvailable()) {
-            plugin.debugMessage("Using RoyalCommands for AFK");
-            return ((RoyalCommandsHandler) this.getDependencyHandler(Dependency.ROYAL_COMMANDS)).isAFK(player);
-        } else if (this.getDependencyHandler(Dependency.ULTIMATE_CORE).isAvailable()) {
-            plugin.debugMessage("Using UltimateCore for AFK");
-            return ((UltimateCoreHandler) this.getDependencyHandler(Dependency.ULTIMATE_CORE)).isAFK(player);
-        } else if (this.getDependencyHandler(Dependency.AFKTERMINATOR).isAvailable()) {
-            plugin.debugMessage("Using AfkTerminator for AFK");
-            return ((AFKTerminatorHandler) this.getDependencyHandler(Dependency.AFKTERMINATOR)).isAFK(player);
-        }
-
-        // No suitable plugin found
-        return false;
+        Essentials essentials = JavaPlugin.getPlugin(Essentials.class);
+        return essentials != null && essentials.isEnabled() && essentials.getUser(player).isAfk();
     }
 
     /**
