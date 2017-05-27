@@ -71,6 +71,16 @@ public class API {
     }
 
     /**
+     * Get all {@linkplain RequirementsHolder}s that the player has already completed.
+     * If the player does not have a current path, it will return an empty list.
+     * @param player Player to get completed requirements for.
+     * @return a list of completed requirements.
+     */
+    public List<RequirementsHolder> getCompletedRequirements(final Player player) {
+        return plugin.getPlayerChecker().getCompletedRequirementsHolders(player);
+    }
+
+    /**
      * Get the global play time (playtime across all servers with the same MySQL
      * database linked) of a player.
      * <p>
@@ -210,5 +220,14 @@ public class API {
         }
 
         return startedPaths;
+    }
+
+    /**
+     * Get all the paths that a player is allowed to start.
+     * @param player Player to check paths for.
+     * @return a list of paths the player is able to start.
+     */
+    public List<Path> getEligiblePaths(Player player) {
+        return plugin.getPathManager().getEligiblePaths(player);
     }
 }

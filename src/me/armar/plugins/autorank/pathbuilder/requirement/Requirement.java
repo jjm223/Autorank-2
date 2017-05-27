@@ -13,7 +13,7 @@ import me.armar.plugins.autorank.statsmanager.StatsPlugin;
 
 /**
  * Whenever you want to create a new requirement, you'll have to extend this
- * class. Every requirement needs the following:
+ * class.
  * 
  * A requirement can be seen as a task a player has to complete. A path consists of multiple requirements that should all be met to complete the path.
  * 
@@ -22,14 +22,13 @@ import me.armar.plugins.autorank.statsmanager.StatsPlugin;
  */
 public abstract class Requirement {
 
-    private Autorank plugin;
-    private boolean optional = false, autoComplete = false;
+    private boolean optional = false, autoComplete = false, isPreRequisite = false;
     private int reqId;
     private List<Result> results = new ArrayList<Result>();
     private String world = null;
 
     public final Autorank getAutorank() {
-        return plugin;
+        return Autorank.getInstance();
     }
 
     /**
@@ -40,7 +39,7 @@ public abstract class Requirement {
      * @return DependencyManager class
      */
     public final DependencyManager getDependencyManager() {
-        return plugin.getDependencyManager();
+        return getAutorank().getDependencyManager();
     }
 
     /**
@@ -66,7 +65,7 @@ public abstract class Requirement {
      * 
      * @return id
      */
-    public int getReqId() {
+    public int getId() {
         return reqId;
     }
 
@@ -85,7 +84,7 @@ public abstract class Requirement {
      * @return stats plugin that Autorank uses for stat data
      */
     public StatsPlugin getStatsPlugin() {
-        return plugin.getHookedStatsPlugin();
+        return getAutorank().getHookedStatsPlugin();
     }
 
     /**
@@ -98,16 +97,19 @@ public abstract class Requirement {
     }
 
     /**
-     * Check if the requirement is completed already.
-     * 
-     * @param reqID
-     *            Requirement id.
+     * Check if this requirement is completed already.
+     *
      * @param uuid
      *            Player to check for
      * @return true if completed, false otherwise.
      */
-    public final boolean isCompleted(final int reqID, final UUID uuid) {
-        return plugin.getPlayerDataConfig().hasCompletedRequirement(reqID, uuid);
+    public final boolean isCompleted(final UUID uuid) {
+
+        if (this.isPreRequisite()) {
+            return getAutorank().getPlayerDataConfig().hasCompletedPrerequisite(this.getId(), uuid);
+        } else {
+            return getAutorank().getPlayerDataConfig().hasCompletedRequirement(this.getId(), uuid);
+        }
     }
 
     /**
@@ -148,10 +150,6 @@ public abstract class Requirement {
         this.autoComplete = autoComplete;
     }
 
-    public final void setAutorank(final Autorank autorank) {
-        this.plugin = autorank;
-    }
-
     /**
      * Set whether this requirement is optional or not
      * 
@@ -181,7 +179,7 @@ public abstract class Requirement {
      * @param reqId
      *            id to set it to
      */
-    public void setReqId(final int reqId) {
+    public void setId(final int reqId) {
         this.reqId = reqId;
     }
 
@@ -218,5 +216,21 @@ public abstract class Requirement {
      */
     public boolean useAutoCompletion() {
         return autoComplete;
+    }
+
+    /**
+     * Check whether this requirement is a prerequisite.
+     * @return true if it is a prerequisite, false otherwise.
+     */
+    public boolean isPreRequisite() {
+        return isPreRequisite;
+    }
+
+    /**
+     * Set whether this requirement is a prerequisite requirement.
+     * @param preRequisite value to set it to.
+     */
+    public void setPreRequisite(boolean preRequisite) {
+        isPreRequisite = preRequisite;
     }
 }

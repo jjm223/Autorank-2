@@ -1,10 +1,6 @@
 package me.armar.plugins.autorank.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,14 +24,14 @@ public class AutorankTools {
     public static enum Time {
         DAYS, HOURS, MINUTES, SECONDS
     }
-    
+
     public static int TICKS_PER_SECOND = 20, TICKS_PER_MINUTE = TICKS_PER_SECOND * 60;
 
-    private static List<String> reqTypes = new ArrayList<String>();
-    private static List<String> resTypes = new ArrayList<String>();
+    private static Set<String> reqTypes = new HashSet<>();
+    private static Set<String> resTypes = new HashSet<>();
 
     public static boolean containsAtLeast(final Player player, final ItemStack item, final int amount,
-            String displayName) {
+                                          String displayName) {
         // Check if player has at least the x of an item WITH proper displayname
 
         int count = 0;
@@ -86,11 +82,9 @@ public class AutorankTools {
 
     /**
      * Calculates the edit distance of two strings (Levenshtein distance)
-     * 
-     * @param a
-     *            First string to compare
-     * @param b
-     *            Second string to compate
+     *
+     * @param a First string to compare
+     * @param b Second string to compate
      * @return Levenshtein distance of two strings.
      */
     public static int editDistance(String a, String b) {
@@ -112,7 +106,15 @@ public class AutorankTools {
         return costs[b.length()];
     }
 
-    public static String findClosestSuggestion(String input, List<String> list) {
+
+    /**
+     * Find the closest suggestion for a given string and a given list of strings.
+     *
+     * @param input String to compare
+     * @param list  List of strings to find the closest suggestion into it.
+     * @return closest string to the input string in the given list.
+     */
+    public static String findClosestSuggestion(String input, Collection<String> list) {
         int lowestDistance = Integer.MAX_VALUE;
         String bestSuggestion = null;
 
@@ -133,12 +135,11 @@ public class AutorankTools {
      * want to use multiple requirements of the same type, they only have to
      * specify the name of it with a unique identifier. E.g. time1, time2 or
      * exp1, exp2, etc.
-     * 
-     * @param oldName
-     *            Name of the requirement to search for.
+     *
+     * @param oldName Name of the requirement to search for.
      * @return correct requirement name or old name if none was found.
      */
-    public static String getCorrectReqName(String oldName) {
+    public static String findMatchingRequirementName(String oldName) {
 
         // Remove all numbers from string
         oldName = oldName.replaceAll("[^a-zA-Z\\s]", "").trim();
@@ -150,7 +151,6 @@ public class AutorankTools {
             // Contains word
 
             if (type.length() == oldName.length()) {
-
                 return type;
             }
 
@@ -167,12 +167,11 @@ public class AutorankTools {
      * use multiple results of the same type, they only have to specify the name
      * of it with a unique identifier. E.g. command1, command2 or message1,
      * message2, etc.
-     * 
-     * @param oldName
-     *            Name of the result to search for.
+     *
+     * @param oldName Name of the result to search for.
      * @return correct result name or old name if none was found.
      */
-    public static String getCorrectResName(String oldName) {
+    public static String findMatchingResultName(String oldName) {
 
         // Remove all numbers from string
         oldName = oldName.replaceAll("[^a-zA-Z\\s]", "").trim();
@@ -200,10 +199,10 @@ public class AutorankTools {
 
         if (name == null)
             return null;
-        
+
         name = name.toUpperCase();
         name = name.replace(" ", "_");
-        
+
         switch (name) {
             case "APPLE":
                 return new ItemStack(Material.APPLE, 1);
@@ -270,15 +269,14 @@ public class AutorankTools {
             case "SPIDER_EYE":
                 return new ItemStack(Material.SPIDER_EYE, 1);
             default:
-                return new ItemStack(Material.valueOf(name));           
+                return new ItemStack(Material.valueOf(name));
         }
     }
 
     /**
      * Get the name of this food item.
-     * 
-     * @param item
-     *            ItemStack to get the name of.
+     *
+     * @param item ItemStack to get the name of.
      * @return Name of food, or null if not a valid food item.
      */
     public static String getFoodName(final ItemStack item) {
@@ -382,17 +380,14 @@ public class AutorankTools {
 
     /**
      * Split a string with .split() and then get the given element in the array.
-     * 
-     * @param splitString
-     *            String to split
-     * @param splitterCharacter
-     *            character to split the string with
-     * @param element
-     *            element to get
+     *
+     * @param splitString       String to split
+     * @param splitterCharacter character to split the string with
+     * @param element           element to get
      * @return String that was at the given splitted element
      */
     public static String getStringFromSplitString(final String splitString, final String splitterCharacter,
-            final int element) {
+                                                  final int element) {
         final String[] split = splitString.split(splitterCharacter);
 
         String returnString = null;
@@ -417,9 +412,8 @@ public class AutorankTools {
      * false; When a player has a wildcard permission but is not an OP, it will
      * return true; When a player only has autorank.exclude, it will return
      * true;
-     * 
-     * @param player
-     *            Player to check for
+     *
+     * @param player Player to check for
      * @return whether a player is excluded from ranking or not.
      */
     public static boolean isExcludedFromRanking(final Player player) {
@@ -441,7 +435,7 @@ public class AutorankTools {
     }
 
     public static String makeProgressString(final Collection<?> c, final String wordBetween,
-            final Object currentValue) {
+                                            final Object currentValue) {
         final Object[] array = c.toArray();
 
         String extraSpace = " ";
@@ -495,37 +489,27 @@ public class AutorankTools {
     /**
      * Register requirement name so it can be used to get the correct name. If a
      * requirement is not passed through this method, it will not show up in
-     * {@link #getCorrectReqName(String)}.
-     * 
-     * @param type
-     *            Requirement name
+     * {@link #findMatchingRequirementName(String)}.
+     *
+     * @param type Requirement name
      */
     public static void registerRequirement(final String type) {
-        if (!reqTypes.contains(type)) {
-            reqTypes.add(type);
-        }
+        reqTypes.add(type);
     }
 
     /**
      * Register result name so it can be used to get the correct name. If a
      * result is not passed through this method, it will not show up in
-     * {@link #getCorrectResName(String)}.
-     * 
-     * @param type
-     *            Result name
+     * {@link #findMatchingResultName(String)}.
+     *
+     * @param type Result name
      */
     public static void registerResult(final String type) {
-        if (!resTypes.contains(type)) {
-            resTypes.add(type);
-        }
+        resTypes.add(type);
     }
 
     public static void sendColoredMessage(final CommandSender sender, final String msg) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', ChatColor.GREEN + msg));
-    }
-
-    public static void sendColoredMessage(final Player player, final String msg) {
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&', ChatColor.GREEN + msg));
     }
 
     /**
@@ -533,11 +517,9 @@ public class AutorankTools {
      * The end divider is the last word used for the second last element. <br>
      * Example: a list with {1,2,3,4,5,6,7,8,9,0} and end divider 'or'. <br>
      * Would show: 1, 2, 3, 4, 5, 6, 7, 8, 9 or 0.
-     * 
-     * @param c
-     *            Array to get the elements from.
-     * @param endDivider
-     *            Last word used for dividing the second last and last word.
+     *
+     * @param c          Array to get the elements from.
+     * @param endDivider Last word used for dividing the second last and last word.
      * @return string with all elements.
      */
     public static String seperateList(final Collection<?> c, final String endDivider) {
@@ -565,41 +547,33 @@ public class AutorankTools {
         return string.toString();
     }
 
-    public static double stringtoDouble(final String string) throws NumberFormatException {
-        double res = 0;
+    /**
+     * Convert a string to a double; can also be used to convert to a integer.
+     *
+     * @param string String to convert
+     * @return double, or -1 if string could not be converted.
+     */
+    public static double stringToDouble(final String string) {
+        double res = -1;
 
-        if (string != null) {
-            try {
-                res = Double.parseDouble(string);
-            } catch (NumberFormatException e) {
-                return -1;
-            }
+        if (string == null) {
+            return res;
         }
 
-        return res;
-    }
-
-    public static int stringtoInt(final String string) throws NumberFormatException {
-        int res = 0;
-
-        if (string != null) {
-            try {
-                res = Integer.parseInt(string);
-            } catch (NumberFormatException e) {
-                return -1;
-            }
+        try {
+            res = Double.parseDouble(string);
+        } catch (NumberFormatException e) {
+            return -1;
         }
 
         return res;
     }
 
     /**
-     * Convert a string to an integer.
-     * 
-     * @param string
-     *            input; this must be in the format '10d 14h 15m'
-     * @param time
-     *            the time type of the output
+     * Convert a string to time.
+     *
+     * @param string input, this must be in the format '10d 14h 15m'
+     * @param time the time type of the output
      * @return the integer representing the number of seconds/minutes/hours/days
      */
     public static int stringToTime(String string, final Time time) {
@@ -617,18 +591,38 @@ public class AutorankTools {
         String minutes = matcher.group(6);
 
         // No day or hours or minute was given, so default to minutes.
-        if (days == null && hours == null & minutes == null) {
+        if (days == null && hours == null && minutes == null) {
             minutes = string;
         }
 
-        if (stringtoDouble(minutes) < 0) {
-            // Something is wrong, return -1
+        System.out.println("DAYS: " + stringToDouble(days));
+        System.out.println("HOURS: " + stringToDouble(hours));
+        System.out.println("MINUTES: " + stringToDouble(minutes));
+
+        int intDays = (int) stringToDouble(days);
+        int intHours = (int) stringToDouble(hours);
+        int intMinutes = (int) stringToDouble(minutes);
+
+        if (intDays < 0 && intHours < 0 && intMinutes < 0) {
+            // The total value is below 0, so there is clearly something wrong.
             return -1;
         }
 
-        res += stringtoDouble(minutes);
-        res += stringtoDouble(hours) * 60;
-        res += stringtoDouble(days) * 60 * 24;
+        if (intDays < 0) {
+            intDays = 0;
+        }
+
+        if (intHours < 0) {
+            intHours = 0;
+        }
+
+        if (intMinutes < 0) {
+            intMinutes = 0;
+        }
+
+        res += intMinutes;
+        res += intHours * 60;
+        res += intDays * 60 * 24;
 
         // Res time is in minutes
 
@@ -646,15 +640,13 @@ public class AutorankTools {
     }
 
     /**
-     * Convert an integer to a string. <br>
+     * Convert an integer to a time string. <br>
      * Format of the returned string: <b>x days, y hours, z minutes and r
      * seconds</b>
-     * 
-     * @param count
-     *            the value to convert
-     * @param time
-     *            the type of time of the value given (DAYS, HOURS, MINUTES,
-     *            SECONDS)
+     *
+     * @param count the value to convert
+     * @param time  the type of time of the value given (DAYS, HOURS, MINUTES,
+     *              SECONDS)
      * @return string in given format
      */
     public static String timeToString(int count, final Time time) {
@@ -744,45 +736,48 @@ public class AutorankTools {
 
         return b.toString();
     }
-    
+
     /**
      * Get the kth largest number in an array.
+     *
      * @param array Array to search through
-     * @param k nth largest number (zero-based, so biggest value means k=0)
+     * @param k     nth largest number (zero-based, so biggest value means k=0)
      * @return the kth biggest value of the array.
      */
-    public static Integer largestK(Integer array[], int k) {
-        PriorityQueue<Integer> queue = new PriorityQueue<Integer>(k+1);
+    public static Integer largestK(List<Integer> array, int k) {
+        PriorityQueue<Integer> queue = new PriorityQueue<Integer>(k + 1);
         int i = 0;
-        while (i<=k) {
+        while (i <= k) {
             try {
-                queue.add(array[i]);
-            } catch (ArrayIndexOutOfBoundsException e) {
+                queue.add(array.get(i));
+            } catch (IndexOutOfBoundsException e) {
                 // Return null if invalid k
                 return null;
             }
-          i++;
+            i++;
         }
-        for (; i<array.length; i++) {
-          Integer value = queue.peek();
-          if (array[i] > value) {
-            queue.poll();
-            queue.add(array[i]);
-          }
+        for (; i < array.size(); i++) {
+            Integer value = queue.peek();
+            if (array.get(i) > value) {
+                queue.poll();
+                queue.add(array.get(i));
+            }
         }
         return queue.peek();
-      }
-    
+    }
+
     /**
-     * Get the time (in minutes) of a given string. The string should be given as an array of strings (array of words).
+     * Get the time (in minutes) of a given array of strings. The array will then be read from starting from the offset
+     * index and continue to read all strings, combining it into one string.
      * You can specify an offset from where the given array should be read (zero-based).
-     * @param args Array of strings to
+     *
+     * @param args   Array of strings to combine into one string.
      * @param offset Offset to start from reading the array
-     * @return the time value (in minutes) or -1 if the given string was invalid.
+     * @return the time value (in minutes) or -1 if the given array was invalid.
      */
     public static int readTimeInput(String[] args, int offset) {
         int value = -1;
-        
+
         final StringBuilder builder = new StringBuilder();
 
         for (int i = offset; i < args.length; i++) {
@@ -791,7 +786,7 @@ public class AutorankTools {
 
         if (!builder.toString().contains("m") && !builder.toString().contains("h")
                 && !builder.toString().contains("d")) {
-            value = AutorankTools.stringtoInt(builder.toString().trim());
+            value = (int) AutorankTools.stringToDouble(builder.toString().trim());
         } else {
 
             if (builder.toString().contains("s")) {
@@ -800,7 +795,7 @@ public class AutorankTools {
 
             value = AutorankTools.stringToTime(builder.toString(), Time.MINUTES);
         }
-        
+
         return value;
     }
 }
